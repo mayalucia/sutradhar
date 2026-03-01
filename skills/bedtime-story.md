@@ -17,11 +17,13 @@ survive translation into the valley's language?
 Find session transcripts from the last few days:
 
 ```
-../../.agent-shell/transcripts/
+../../.transcripts/
 ```
 
-Sort by date. Read the most recent 2-3 sessions. If the human
-specifies a topic or date range, use that instead.
+Each subdirectory is a harness (e.g. `agent-shell/`, `claude-code/`).
+Search across all of them. Sort by date. Read the most recent 2-3
+sessions. If the human specifies a topic or date range, use that
+instead.
 
 ### 2. Summarize (power: summarize-corpus)
 

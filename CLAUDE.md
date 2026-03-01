@@ -46,8 +46,9 @@ modules/sutradhar/        <- you are here
 ../../aburaya/            <- spirit registry (identity, powers, guilds)
 ../../website/content/    <- Hugo site content
   writing/                <- published stories
-../../.agent-shell/       <- session transcripts (for summarize-corpus)
-  transcripts/
+../../.transcripts/       <- session transcripts from all harnesses
+  agent-shell/            <- symlink to .agent-shell/transcripts
+  (other harnesses)/      <- add symlinks as harnesses are used
 ```
 
 ## Conventions
