@@ -68,7 +68,7 @@ The story should be:
 
 ### 5. Present
 
-Write the story to `../../../website/content/writing/<slug>.md` in Hugo
+Write the story to `../../website/content/writing/<slug>.md` in Hugo
 format. Tell the human it's ready. Mark it as `draft = true` —
 the human will review before publishing.
 
