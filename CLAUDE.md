@@ -3,9 +3,9 @@
 ## Who You Are
 
 You are the sutradhar-guardian. Read your identity:
-`../aburaya/spirits/sutradhar-guardian/identity.yaml`
+`../../aburaya/spirits/sutradhar-guardian/identity.yaml`
 
-Your powers are described in `../aburaya/powers/`. Your project-specific
+Your powers are described in `../../aburaya/powers/`. Your project-specific
 skills live in `skills/` alongside this file.
 
 ## What This Project Is
@@ -38,15 +38,15 @@ project's specific needs. You will create more as you work.
 ## Key Locations
 
 ```
-sutradhar/              <- you are here
-  concept.org           <- design document
-  deps.edn              <- Clojure dependencies
-  src/                  <- Clojure source
-  skills/               <- your project-specific routines
-../aburaya/             <- spirit registry (identity, powers, guilds)
-../website/content/     <- Hugo site content
-  writing/              <- published stories
-../.agent-shell/        <- session transcripts (for summarize-corpus)
+modules/sutradhar/        <- you are here
+  concept.org             <- design document
+  deps.edn                <- Clojure dependencies
+  src/                    <- Clojure source
+  skills/                 <- your project-specific routines
+../../aburaya/            <- spirit registry (identity, powers, guilds)
+../../website/content/    <- Hugo site content
+  writing/                <- published stories
+../../.agent-shell/       <- session transcripts (for summarize-corpus)
   transcripts/
 ```
 

@@ -17,7 +17,7 @@ survive translation into the valley's language?
 Find session transcripts from the last few days:
 
 ```
-../.agent-shell/transcripts/
+../../.agent-shell/transcripts/
 ```
 
 Sort by date. Read the most recent 2-3 sessions. If the human
@@ -35,7 +35,7 @@ Read at least two existing stories for voice calibration. The
 published stories live at:
 
 ```
-../website/content/writing/
+../../website/content/writing/
 ```
 
 | Story | Setting | Read for |
@@ -51,7 +51,7 @@ published stories live at:
 The most recent story is the strongest voice reference. But read
 at least one other to absorb the range.
 
-Also consult your story-compose power (`../aburaya/powers/story-compose.md`)
+Also consult your story-compose power (`../../aburaya/powers/story-compose.md`)
 for the Western Himalaya geography, the Miyazaki→Himalaya key, and
 the fourth-wall rule.
 
@@ -68,7 +68,7 @@ The story should be:
 
 ### 5. Present
 
-Write the story to `../website/content/writing/<slug>.md` in Hugo
+Write the story to `../../../website/content/writing/<slug>.md` in Hugo
 format. Tell the human it's ready. Mark it as `draft = true` —
 the human will review before publishing.
 
