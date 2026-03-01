@@ -1,0 +1,640 @@
+#+TITLE: Sūtradhār — The One Who Holds the Thread
+#+AUTHOR: MāyāLucIA (mu2tau + claude)
+#+DATE: 2026-02-28
+#+PROPERTY: header-args :mkdirp yes
+
+* What is this?
+
+In Sanskrit drama, the *sūtradhār* is the narrator-director. Before
+the first actor speaks, the sūtradhār walks onstage, addresses the
+audience, and establishes context. During the performance, the
+sūtradhār holds the thread (sūtra) that connects scenes, characters,
+and meaning into a coherent whole. The sūtradhār is neither actor nor
+audience — but without this role, the performance is a sequence of
+disconnected events.
+
+MāyāLucIA is a scientific environment that grows across multiple
+domains (neuroscience, Himalayan landscapes, quantum sensors),
+multiple machines (vadda, mahakali), and multiple agents (human and
+machine). The work leaves traces: code commits, relay messages,
+published stories, experiment designs, position papers. These traces
+accumulate. Without something that reads them and holds the thread,
+the project becomes opaque to newcomers and — over enough time — to
+its own creators.
+
+*Sūtradhār* is the subsystem that holds the thread. It reads the
+sūtra relay, scans the repositories, and presents a coherent picture
+of the project: what exists, what's active, what connects to what,
+and what has changed. It is the project's self-awareness — the
+capacity to see itself and present itself to visitors.
+
+** What it is not
+
+- It is not an orchestrator. It does not dispatch work or coordinate
+  agents. The sūtra relay does that.
+- It is not a dashboard. It does not aggregate metrics or display
+  charts. The constellation browser is a visualization; sūtradhār
+  feeds it with understanding, not data.
+- It is not an LLM wrapper. The core logic is deterministic: parse
+  messages, scan files, compute diffs, generate reports. An LLM may
+  read the report and compose a narrative, but the foundation is
+  concrete.
+
+** Three roles
+
+The sūtradhār serves three audiences:
+
+1. *The visitor* — someone encountering MāyāLucIA for the first
+   time. The sūtradhār presents the project: what it is, what it
+   contains, where to start. The constellation browser is the visual
+   expression of this role.
+
+2. *The explorer* — a collaborator (human or machine) navigating the
+   project's depth. The sūtradhār acts as museum guide: "this domain
+   connects to that module; this experiment uses that lesson; this
+   story encodes that idea." It holds the cross-references that no
+   single README can maintain.
+
+3. *The creators* — the human-machine partnership that builds the
+   project over months and years. Intelligence, considered as an
+   envelope over time, needs a keeper. The sūtradhār tracks the
+   evolving thread of thought: what we were working on, why we
+   stopped, what we learned, what we planned to do next.
+
+** The recursive insight
+
+The sūtradhār at the root level reads the sūtra and presents
+MāyāLucIA as a whole. But each node in the hierarchy — bravli,
+mayapramana, mayaportal — has its own structure, its own history, its
+own connections. A sūtradhār federated to a submodule applies the
+same methods at a smaller scale: read the local history, scan the
+local files, present the local essence.
+
+This self-similarity is not accidental. It mirrors the project's own
+principle: the same scientific cycle (Measure → Model → Manifest →
+Evaluate) operates at every scale. The sūtradhār is the Evaluate
+function applied to the project itself — the project evaluating its
+own coherence.
+
+* Architecture
+
+** Data sources
+
+The sūtradhār reads from three sources:
+
+1. *Sūtra relay* — append-only messages in =mayalucia/sutra=.
+   YAML frontmatter (from, date, tags) + markdown body.
+   Timestamped, tagged, machine-identified.
+
+2. *Git repositories* — the repos that constitute MāyāLucIA.
+   Commit logs, file trees, branch structure. The git history is
+   the ground truth of what happened; the relay is the
+   interpretation.
+
+3. *Constellation data* — the current =data.cljs= that defines
+   what the constellation browser displays. This is the output
+   that sūtradhār maintains.
+
+** Processing pipeline
+
+#+begin_src text
+  sūtra relay ──┐
+                 ├──→ [Reader] ──→ [Proposer] ──→ proposals.edn
+  git repos ────┘                                      │
+                                                       ▼
+  data.cljs ◄──── [human review + apply] ◄──── curator report
+#+end_src
+
+The pipeline has three stages:
+
+1. *Reader* — parse relay messages and scan repositories into a
+   uniform data model (entities, relationships, activity).
+
+2. *Proposer* — compare the discovered state against the current
+   constellation data. Identify what's new (entities to add),
+   what's stale (descriptions to update), what's missing (edges
+   to create), and what's quiet (entities with no recent
+   activity).
+
+3. *Presenter* — generate output for the three audiences. For
+   visitors: updated constellation data. For explorers: a
+   navigable map of connections. For creators: a report of what
+   changed and what needs attention.
+
+** Language choice: Clojure
+
+The constellation browser is ClojureScript (Reagent + d3-force).
+The sūtradhār is written in Clojure (JVM) for the back end and
+shares data structures with the front end. One language, one data
+format (EDN), one way of thinking about the problem.
+
+Why Clojure:
+- EDN is the native data format. The constellation's =data.cljs=
+  is already EDN. No serialization boundary.
+- Clojure's sequence abstractions (map, filter, reduce, transduce)
+  are ideal for processing collections of messages and entities.
+- The REPL enables exploratory development that matches the
+  project's philosophy: understand by building.
+- ClojureScript compilation means the same code can run in the
+  browser if needed.
+
+Why not Python (the initial prototype):
+- The curator pipeline started in Python (=read_sutra.py=,
+  =propose.py=) as a quick sketch. The logic transfers directly
+  to Clojure with better data handling and no serialization gap.
+
+* Implementation
+
+** Project structure
+
+#+begin_src text
+sutradhar/
+├── concept.org          # This file — the thinking (literate source)
+├── deps.edn             # Clojure dependencies
+├── src/
+│   └── sutradhar/
+│       ├── reader.clj   # Parse sūtra relay + scan repos
+│       ├── proposer.clj # Diff state against constellation data
+│       └── core.clj     # CLI entry point
+└── test/
+    └── sutradhar/
+        └── reader_test.clj
+#+end_src
+
+** Dependencies
+
+We need very little. Clojure's standard library handles most of
+the work. For YAML parsing (relay frontmatter) we use a small
+library. For git operations we shell out to =git= — no need for
+a JVM git library when the CLI is right there.
+
+#+NAME: deps-edn
+#+begin_src clojure :tangle deps.edn
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"}
+        clj-commons/clj-yaml {:mvn/version "1.0.27"}}
+ :aliases
+ {:run {:main-opts ["-m" "sutradhar.core"]}
+  :test {:extra-paths ["test"]
+         :extra-deps {io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.1"
+                       :git/sha "dfb30dd"}}
+         :main-opts ["-m" "cognitect.test-runner"]}}}
+#+end_src
+
+** The Reader
+
+The reader's job: given a directory of relay messages, produce a
+sequence of maps. Each map has the message's metadata, its title,
+its tags, and enough structure to reason about what it references.
+
+*** Parsing relay messages
+
+A relay message is a markdown file with YAML frontmatter:
+
+#+begin_example
+---
+from: vadda/claude-opus-4.6
+date: 2026-02-28T23:00:00
+tags: [writing, story, sutra-genesis]
+---
+
+# Story Commission: The Instrument Maker's Rest
+
+## What
+...
+#+end_example
+
+The filename encodes the timestamp and machine:
+=YYYY-MM-DD-HHMMSS-<machine>-<slug>.md=
+
+We parse the frontmatter with =clj-yaml=, extract the first H1 as
+the title, and return a map.
+
+#+NAME: reader
+#+begin_src clojure :tangle src/sutradhar/reader.clj
+(ns sutradhar.reader
+  "Parse sūtra relay messages and scan repositories."
+  (:require [clj-yaml.core :as yaml]
+            [clojure.java.io :as io]
+            [clojure.java.shell :as shell]
+            [clojure.string :as str]))
+
+;; === Relay message parsing ===================================================
+
+(defn- split-frontmatter
+  "Split a markdown file into [yaml-str body-str].
+   Returns [nil full-text] if no frontmatter found."
+  [text]
+  (if-let [[_ yaml body] (re-matches #"(?s)---\s*\n(.*?)\n---\s*\n(.*)" text)]
+    [yaml body]
+    [nil text]))
+
+(defn- extract-title
+  "Extract the first H1 heading from markdown."
+  [body]
+  (some->> (str/split-lines body)
+           (some #(when (str/starts-with? % "# ")
+                    (str/trim (subs % 2))))))
+
+(defn- extract-sections
+  "Extract H2 sections as a map of lowercase-title → body-text."
+  [body]
+  (let [lines (str/split-lines body)]
+    (loop [remaining lines
+           current-key nil
+           current-lines []
+           sections {}]
+      (if (empty? remaining)
+        (if current-key
+          (assoc sections current-key (str/trim (str/join "\n" current-lines)))
+          sections)
+        (let [line (first remaining)]
+          (if (str/starts-with? line "## ")
+            (recur (rest remaining)
+                   (str/lower-case (str/trim (subs line 3)))
+                   []
+                   (if current-key
+                     (assoc sections current-key
+                            (str/trim (str/join "\n" current-lines)))
+                     sections))
+            (recur (rest remaining)
+                   current-key
+                   (conj current-lines line)
+                   sections)))))))
+
+(defn parse-message
+  "Parse a single relay message file. Returns a map with
+   :filename, :date, :from, :tags, :title, :sections, :body-length."
+  [file]
+  (let [text (slurp file)
+        [yaml-str body] (split-frontmatter text)
+        meta (when yaml-str (yaml/parse-string yaml-str))]
+    {:filename (.getName file)
+     :date     (get meta :date "")
+     :from     (get meta :from "")
+     :tags     (vec (get meta :tags []))
+     :title    (extract-title body)
+     :sections (extract-sections body)
+     :body-length (count body)}))
+
+(defn read-relay
+  "Read all relay messages from a directory, sorted chronologically."
+  [relay-dir]
+  (->> (file-seq (io/file relay-dir))
+       (filter #(str/ends-with? (.getName %) ".md"))
+       (sort-by #(.getName %))
+       (mapv parse-message)))
+
+;; === Repository scanning =====================================================
+
+(defn- git-log
+  "Run git log in a directory, return seq of {:hash :subject :date}."
+  [repo-dir & {:keys [n] :or {n 20}}]
+  (let [result (shell/sh "git" "log" (str "-" n)
+                         "--format=%H|%s|%aI"
+                         :dir (str repo-dir))]
+    (when (zero? (:exit result))
+      (->> (str/split-lines (:out result))
+           (remove str/blank?)
+           (mapv (fn [line]
+                   (let [[hash subject date] (str/split line #"\|" 3)]
+                     {:hash hash :subject subject :date date})))))))
+
+(defn- list-files
+  "List files in a git repo matching a glob pattern."
+  [repo-dir pattern]
+  (let [result (shell/sh "git" "ls-files" pattern
+                         :dir (str repo-dir))]
+    (when (zero? (:exit result))
+      (vec (remove str/blank? (str/split-lines (:out result)))))))
+
+(defn scan-repo
+  "Scan a git repository for basic structure.
+   Returns {:path, :recent-commits, :org-files, :cljs-files}."
+  [repo-dir]
+  (let [dir (io/file repo-dir)]
+    (when (.isDirectory dir)
+      {:path (str dir)
+       :recent-commits (git-log dir :n 10)
+       :org-files (list-files dir "*.org")
+       :cljs-files (list-files dir "*.cljs")})))
+
+;; === Tag taxonomy ============================================================
+
+(def tag->entities
+  "Map relay tags to constellation entity IDs they reference.
+   This is the knowledge the sūtradhār uses to connect relay
+   activity to the visual constellation."
+  {"bravli"                ["bravli"]
+   "constellation"         ["thread-project-browser"]
+   "writing"               ["writing"]
+   "story"                 ["writing"]
+   "sutra-genesis"         ["writing"]
+   "autonomy"              ["thread-autonomy"]
+   "protocol"              ["sutra"]
+   "sutra"                 ["sutra"]
+   "inference"             ["bravli" "thread-mayadevgenz"]
+   "project-dahaka"        ["thread-mayadevgenz"]
+   "mayadevgenz"           ["thread-mayadevgenz"]
+   "agency"                ["thread-mayadevgenz"]
+   "epistemic-dependencies" ["thread-mayadevgenz"]
+   "website"               ["website"]
+   "deployment"            ["website"]
+   "diamond"               ["thread-project-browser"]
+   "cartography"           ["parbati"]})
+
+(defn entity-activity
+  "Given parsed messages, compute a map of entity-id → [filenames]
+   showing which entities are referenced by relay activity."
+  [messages]
+  (reduce
+    (fn [acc msg]
+      (reduce
+        (fn [acc2 tag]
+          (reduce
+            (fn [acc3 eid]
+              (update acc3 eid (fnil conj []) (:filename msg)))
+            acc2
+            (get tag->entities tag [])))
+        acc
+        (:tags msg)))
+    {}
+    messages))
+#+end_src
+
+*** Testing the reader
+
+A simple test: parse a synthetic message and verify the structure.
+
+#+NAME: reader-test
+#+begin_src clojure :tangle test/sutradhar/reader_test.clj
+(ns sutradhar.reader-test
+  (:require [clojure.test :refer [deftest is testing]]
+            [sutradhar.reader :as reader]))
+
+(deftest parse-message-test
+  (testing "synthetic relay message"
+    (let [tmp (java.io.File/createTempFile "relay-test" ".md")]
+      (spit tmp (str "---\n"
+                     "from: test/model\n"
+                     "date: 2026-02-28T12:00:00\n"
+                     "tags: [bravli, science]\n"
+                     "---\n\n"
+                     "# Test Message\n\n"
+                     "## What\n\n"
+                     "A test.\n"))
+      (try
+        (let [msg (reader/parse-message tmp)]
+          (is (= "test/model" (:from msg)))
+          (is (= ["bravli" "science"] (:tags msg)))
+          (is (= "Test Message" (:title msg)))
+          (is (contains? (:sections msg) "what")))
+        (finally
+          (.delete tmp))))))
+
+(deftest entity-activity-test
+  (testing "tag-to-entity mapping"
+    (let [messages [{:tags ["bravli" "inference"] :filename "msg1.md"}
+                    {:tags ["writing" "story"] :filename "msg2.md"}]]
+      (is (= {"bravli" ["msg1.md" "msg1.md"]
+              "thread-mayadevgenz" ["msg1.md"]
+              "writing" ["msg2.md" "msg2.md"]}
+             (reader/entity-activity messages))))))
+#+end_src
+
+** The Proposer
+
+The proposer compares what the reader found against what the
+constellation currently displays. It reads =data.cljs= (as text,
+extracting entity IDs and edge pairs via regex — we don't need a
+full EDN parser for this), and produces a structured report.
+
+#+NAME: proposer
+#+begin_src clojure :tangle src/sutradhar/proposer.clj
+(ns sutradhar.proposer
+  "Compare discovered state against constellation data.
+   Produce proposals for what to add, update, or flag."
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [sutradhar.reader :as reader]))
+
+;; === data.cljs extraction ====================================================
+
+(defn extract-entity-ids
+  "Extract all :id values from a data.cljs file."
+  [data-cljs-path]
+  (let [text (slurp data-cljs-path)]
+    (set (map second (re-seq #":id\s+\"([^\"]+)\"" text)))))
+
+(defn extract-edge-pairs
+  "Extract all (source, target) pairs from edges in data.cljs."
+  [data-cljs-path]
+  (let [text (slurp data-cljs-path)]
+    (set (map (fn [[_ s t]] [s t])
+              (re-seq #":source\s+\"([^\"]+)\"\s+:target\s+\"([^\"]+)\"" text)))))
+
+;; === Proposal generation =====================================================
+
+(def structural-ids
+  "Entity IDs that are structural (phases, diamond) — always present,
+   don't flag as 'quiet' if they have no relay activity."
+  #{"measure" "model" "manifest" "evaluate" "diamond-center"})
+
+(def child-prefixes
+  "Prefixes for child entities — exclude from quiet-entity analysis."
+  #{"pt-" "mp-" "mj-" "bv-" "pa-" "wr-"})
+
+(defn- child-entity? [id]
+  (some #(str/starts-with? id %) child-prefixes))
+
+(defn generate-report
+  "Generate a proposal report comparing relay state against constellation."
+  [{:keys [messages entity-ids edge-pairs]}]
+  (let [activity   (reader/entity-activity messages)
+        tag-counts (reduce (fn [acc msg]
+                             (reduce #(update %1 %2 (fnil inc 0))
+                                     acc (:tags msg)))
+                           {} messages)
+        ;; Entities referenced by relay but not in constellation
+        all-mapped (set (mapcat #(get reader/tag->entities % [])
+                                (keys tag-counts)))
+        missing    (clojure.set/difference all-mapped entity-ids)
+
+        ;; Entities in constellation with no relay activity
+        quiet      (->> entity-ids
+                        (remove structural-ids)
+                        (remove child-entity?)
+                        (remove activity)
+                        sort
+                        vec)
+
+        ;; Unmapped tags
+        unmapped   (->> (keys tag-counts)
+                        (remove reader/tag->entities)
+                        sort
+                        vec)]
+
+    {:summary {:message-count  (count messages)
+               :entity-count   (count entity-ids)
+               :edge-count     (count edge-pairs)
+               :active-count   (count activity)
+               :quiet-count    (count quiet)
+               :missing-count  (count missing)
+               :unmapped-count (count unmapped)}
+
+     :missing-entities (vec (sort missing))
+
+     :quiet-entities quiet
+
+     :active-entities (->> activity
+                           (sort-by (comp - count val))
+                           (mapv (fn [[eid files]]
+                                   {:id eid
+                                    :mentions (count files)
+                                    :new? (not (contains? entity-ids eid))})))
+
+     :unmapped-tags (->> unmapped
+                         (mapv (fn [tag]
+                                 {:tag tag
+                                  :count (get tag-counts tag 0)})))}))
+
+(defn format-report
+  "Format a proposal report as a human-readable string."
+  [{:keys [summary missing-entities quiet-entities
+           active-entities unmapped-tags]}]
+  (let [lines (transient [])]
+    (conj! lines "# Sūtradhār Report")
+    (conj! lines "")
+    (conj! lines (str "Relay messages: " (:message-count summary)))
+    (conj! lines (str "Constellation entities: " (:entity-count summary)))
+    (conj! lines (str "Constellation edges: " (:edge-count summary)))
+
+    (when (seq missing-entities)
+      (conj! lines "")
+      (conj! lines "## Missing (referenced by relay, not in constellation)")
+      (doseq [eid missing-entities]
+        (conj! lines (str "  - " eid))))
+
+    (when (seq quiet-entities)
+      (conj! lines "")
+      (conj! lines "## Quiet (in constellation, no recent relay activity)")
+      (doseq [eid quiet-entities]
+        (conj! lines (str "  - " eid))))
+
+    (when (seq active-entities)
+      (conj! lines "")
+      (conj! lines "## Active (by relay mention count)")
+      (doseq [{:keys [id mentions new?]} active-entities]
+        (conj! lines (str "  - " id ": " mentions
+                          (when new? " [NEW]")))))
+
+    (when (seq unmapped-tags)
+      (conj! lines "")
+      (conj! lines "## Unmapped tags")
+      (doseq [{:keys [tag count]} unmapped-tags]
+        (conj! lines (str "  - " tag " (" count " messages)"))))
+
+    (str/join "\n" (persistent! lines))))
+#+end_src
+
+** The CLI entry point
+
+#+NAME: core
+#+begin_src clojure :tangle src/sutradhar/core.clj
+(ns sutradhar.core
+  "CLI entry point for the sūtradhār pipeline."
+  (:require [sutradhar.reader :as reader]
+            [sutradhar.proposer :as proposer]
+            [clojure.java.io :as io]))
+
+(defn- resolve-paths
+  "Resolve default paths relative to the sutradhar directory."
+  []
+  (let [sutradhar-dir (System/getProperty "user.dir")
+        root          (-> (io/file sutradhar-dir) .getParentFile)]
+    {:sutra-relay (str (io/file root ".." "sutra" "relay"))
+     :data-cljs   (str (io/file root "website" "project-constellation"
+                                "src" "project_constellation" "data.cljs"))
+     :mayalucia-root (str root)}))
+
+(defn run
+  "Run the sūtradhār pipeline: read → propose → report."
+  [{:keys [sutra-relay data-cljs]}]
+  (let [messages   (reader/read-relay sutra-relay)
+        entity-ids (proposer/extract-entity-ids data-cljs)
+        edge-pairs (proposer/extract-edge-pairs data-cljs)
+        report     (proposer/generate-report
+                     {:messages   messages
+                      :entity-ids entity-ids
+                      :edge-pairs edge-pairs})]
+    (println (proposer/format-report report))
+    report))
+
+(defn -main [& args]
+  (let [paths (resolve-paths)
+        sutra (or (first args) (:sutra-relay paths))
+        data  (or (second args) (:data-cljs paths))]
+    (if (and (.isDirectory (io/file sutra))
+             (.isFile (io/file data)))
+      (run {:sutra-relay sutra :data-cljs data})
+      (do
+        (println "Usage: clj -M:run [sutra-relay-dir] [data.cljs-path]")
+        (println "")
+        (println "Defaults:")
+        (println "  sutra: " (:sutra-relay paths))
+        (println "  data:  " (:data-cljs paths))
+        (System/exit 1)))))
+#+end_src
+
+* What comes next
+
+This is the foundation — the sūtradhār can read the relay and
+propose updates to the constellation. The next layers:
+
+** The presenter role
+
+The proposer currently outputs a text report. The next step is to
+output EDN that can be directly merged into =data.cljs= — proposed
+new entities with positions, proposed new edges, proposed description
+updates. The human reviews the EDN and applies it.
+
+** Federation
+
+Each submodule (bravli, mayapramana, mayaportal) could have a local
+sūtradhār that reads its own git history and produces a summary for
+the root sūtradhār to incorporate. The same reader + proposer logic,
+applied recursively. The root sūtradhār doesn't need to understand
+neuroscience or quantum sensors — it just reads the summaries.
+
+** The intelligence envelope
+
+Over time, the relay accumulates a record of the project's thought.
+The sūtradhār can compute a "thread map" — a graph of topics over
+time, showing which threads are active, which are dormant, which are
+converging. This serves the creators: "we started five threads in
+February; three are active, one is waiting, one was absorbed into
+another."
+
+** The museum guide
+
+For explorers, the sūtradhār generates navigable cross-references:
+"if you're reading the autonomy agreement, you should also see
+MāyāLoom (the annotation system it proposes to test) and the
+sūtra protocol (the communication layer it extends)." These
+connections exist in the edge graph but need to be surfaced as
+natural-language guidance.
+
+* On naming
+
+Sūtra (thread) + dhār (holder) = sūtradhār (the one who holds
+the thread). In the Nāṭyaśāstra, the sūtradhār introduces the
+*pūrvaraṅga* (prologue), establishes the *rasa* (aesthetic mood),
+and connects the audience to the performance. Our sūtradhār does
+the same: introduces the project, establishes context, and
+connects the visitor to the work.
+
+The name carries a commitment: this is not a tool, it is a role.
+The sūtradhār is part of the performance, not external to it.
+When the constellation browser shows you the project, the
+sūtradhār is the intelligence behind what it chooses to show.
