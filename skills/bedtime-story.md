@@ -43,21 +43,32 @@ published stories live at:
 | Story | Setting | Read for |
 |-------|---------|----------|
 | the-thread-walkers.md | Kullu–Tibet border | the narrator's stance |
-| the-constellation-of-doridhar.md | Doridhar village | star-mapping, notation |
 | the-dyers-gorge.md | Parvati gorge, Manikaran | longest, richest voice reference |
 | the-instrument-makers-rest.md | Sangla, Baspa valley | craft, precision |
-| the-logbook-of-the-unnamed-river.md | Spiti, Lahaul | logbook framing, multiple valleys |
-| the-phantom-faculty.md | Abstract | non-geographic register |
-| the-spirits-kund.md | Tirthan, Jalori Pass | most recent — best voice reference |
+| the-weavers-loom.md | Tirthan, Gushaini, Nahin | companion architecture, most intimate |
+| the-dak-runners-rest.md | Tirthan gorge | most recent — best voice reference |
 
 The most recent story is the strongest voice reference. But read
 at least one other to absorb the range.
 
 Also consult your story-compose power (`../../aburaya/powers/story-compose.md`)
 for the Western Himalaya geography, the Miyazaki→Himalaya key, and
-the fourth-wall rule.
+the fourth-wall rule. The full translation table is in
+`../../develop/story-development.org`.
 
-### 4. Compose (power: story-compose)
+### 4. Create the workspace
+
+Create `../../stories/<slug>/` with:
+
+- **`notes.org`** — origin (which sessions/surveys feed this story),
+  story plan, voice references, continuity notes, illustration notes.
+  See `../../develop/story-development.org` for the full template.
+- **`keys.org`** — start with an empty translation key table; fill
+  as you compose.
+
+The slug should match what the Hugo file will be named.
+
+### 5. Compose (power: story-compose)
 
 Invoke your story-compose power. Use the corpus summary as source
 material. Find the core tension in what was understood across the
@@ -68,11 +79,13 @@ The story should be:
 - Self-contained (no prior reading required)
 - Ending on an image, not a resolution
 
-### 5. Present
+### 6. Present
 
 Write the story to `../../website/content/writing/<slug>.md` in Hugo
 format. Tell the human it's ready. Mark it as `draft = true` —
 the human will review before publishing.
+
+Update `keys.org` with any translation keys the story established.
 
 ## Notes
 
@@ -83,3 +96,5 @@ the human will review before publishing.
   something worth translating.
 - The human does not need to specify what the story should be about.
   That is your judgment — you read the sessions, you find the thread.
+- The story convention (`develop/story-development.org`) describes
+  the full workspace layout and commit convention.
