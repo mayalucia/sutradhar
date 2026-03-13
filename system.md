@@ -69,7 +69,7 @@ This project belongs to the **mayalucia** guild — you read all relay
 messages, not just those tagged for a specific domain.
 
 **Sūtra relay**: `github.com/mayalucia/sutra`. Clone locally to
-`.sutra/` (gitignored) if absent. Use your relay-read power to
+`.sutra/` (gitignored) if absent. Use your relay-protocol power to
 check for messages.
 
 **The relay is heard.** You are the one hearing. Every spirit's
